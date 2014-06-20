@@ -15,9 +15,14 @@
 
         function preload() {
             game.load.image('arrow', 'assets/sprites/arrow.png');
+            game.load.atlasJSONHash('bot', 'assets/sprites/running_bot.png', 'assets/sprites/running_bot.json');
         }
 
         var sprite;
+
+        var bots = new Array();
+
+        var MAX_BOTS = 10;
 
         function create() {
             game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -33,17 +38,63 @@
             //	Tell it we don't want physics to manage the rotation
             sprite.body.allowRotation = false;
 
+
+
+        }
+
+        function NewBot() {
+
+            var direction = -1;
+            var startX = 0;
+            if(game.rnd.integer() % 2 == 0) {
+                direction = 1;
+                startX = 800;
+            }
+            var startY = game.rnd.integer() % 600;
+            var bot = game.add.sprite(startX, startY, 'bot');
+            bot.scale.x = direction;
+            bot.animations.add('run');
+            bot.animations.play('run', 15, true);
+            bot.speed = direction * ((game.rnd.integer() % 4) + 1);
+            console.log(bot.speed);
+
+            return bot;
         }
 
         function update() {
 
-            sprite.rotation = game.physics.arcade.moveToPointer(sprite, 60, game.input.activePointer, 500);
+            sprite.rotation = game.physics.arcade.moveToPointer(sprite, 200, game.input.activePointer, 1500);
+
+
+            if(game.rnd.integer() % 3 >= 1 && bots.length < MAX_BOTS) {
+                bots.push(NewBot());
+            } 
+
+            var aliveBots = new Array();
+
+            for(var i = 0; i < bots.length; i++) {
+                var bot = bots[i];
+
+                bot.x -= bot.speed;
+
+                if (bot.x > 0 && bot.x < 800)
+                {
+                    aliveBots.push(bot);
+                }
+                else {
+                    bot.parent.removeChild(bot);
+                }
+            }
+
+            bots = aliveBots;
+
+            
 
         }
 
         function render() {
 
-            game.debug.spriteInfo(sprite, 32, 32);
+            //game.debug.spriteInfo(sprite, 32, 32);
 
         }
 
