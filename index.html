@@ -14,7 +14,7 @@
         var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, update: update, render: render });
 
         function preload() {
-            game.load.image('arrow', 'assets/sprites/arrow.png');
+            game.load.image('arrow', 'assets/sprites/fishSmall2.png');
             game.load.atlasJSONHash('bot', 'assets/sprites/running_bot.png', 'assets/sprites/running_bot.json');
         }
 
@@ -30,13 +30,14 @@
             game.stage.backgroundColor = '#0072bc';
 
             sprite = game.add.sprite(400, 300, 'arrow');
+            sprite.scale.x = -1;
             sprite.anchor.setTo(0.5, 0.5);
 
             //	Enable Arcade Physics for the sprite
             game.physics.enable(sprite, Phaser.Physics.ARCADE);
 
             //	Tell it we don't want physics to manage the rotation
-            sprite.body.allowRotation = false;
+            sprite.body.allowRotation = true;
 
 
 
@@ -52,7 +53,9 @@
             }
             var startY = game.rnd.integer() % 600;
             var bot = game.add.sprite(startX, startY, 'bot');
-            bot.scale.x = direction;
+            scale = game.rnd.realInRange(0.3, 1)
+            bot.scale.x = direction * scale;
+            bot.scale.y = scale;
             bot.animations.add('run');
             bot.animations.play('run', 15, true);
             bot.speed = direction * ((game.rnd.integer() % 4) + 1);
@@ -64,7 +67,12 @@
         function update() {
 
             sprite.rotation = game.physics.arcade.moveToPointer(sprite, 200, game.input.activePointer, 1500);
-
+            spriteDir = sprite.deltaX;
+            if (spriteDir < 0) {
+                sprite.scale.y = -1;
+            } else {
+                sprite.scale.y = 1;
+            }
 
             if(game.rnd.integer() % 3 >= 1 && bots.length < MAX_BOTS) {
                 bots.push(NewBot());
