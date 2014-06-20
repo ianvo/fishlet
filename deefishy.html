@@ -1,0 +1,144 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>hello phaser!</title>
+        <script src="phaser.js"></script>
+    </head>
+    <body>
+
+    <script type="text/javascript">
+
+    window.onload = function() {
+
+        var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, update: update, render: render })
+
+        function preload() {
+            //  Here we load the Starling Texture Atlas and XML file
+            //game.load.atlasXML('seacreatures', 'assets/sprites/seacreatures.png', 'assets/sprites/seacreatures.xml');
+            //  Here is the exact same set of animations but as a JSON file instead
+            game.load.atlas('seacreatures', 'assets/sprites/seacreatures_json.png', 'assets/sprites/seacreatures_json.json');
+
+            //  Just a few images to use in our underwater scene
+            game.load.image('undersea', 'assets/pics/undersea.jpg');
+            game.load.image('coral', 'assets/pics/seabed.png');
+
+            game.load.image('fishFood2', 'assets/sprites/fishMedium1.png');
+            game.load.image('fishFood1', 'assets/sprites/fishMedium2.png');
+            game.load.image('fishFood3', 'assets/sprites/fishLarge1.png');
+            game.load.image('fishFood4', 'assets/sprites/fishSmall2.png'); 
+        }
+
+        var sprite;
+        var fish;
+        var MAX_FISH = 10;
+
+        var score = 0;
+        var newFishTimer = 0;
+
+        function create() {
+            game.physics.startSystem(Phaser.Physics.ARCADE);
+
+            // The background sea floor.
+            game.add.image(0, 0, 'undersea');
+            game.add.image(0, 466, 'coral');
+
+            // The fish food group
+            fish = game.add.group();
+            fish.enableBody = true;
+            fish.physicsBodyType = Phaser.Physics.ARCADE;
+            for(var i = 0; i < MAX_FISH; i++) {
+                var fishType = game.rnd.integerInRange(2,4);
+                fish.create(, 'fishFood1');
+            fish.setAll('anchor.x', 0.5);
+            fish.setAll('anchor.y', 1);
+            fish.setAll('outOfBoundsKill',true);
+            fish.setAll('checkWorldBounds',true);
+
+            // The player
+            sprite = game.add.sprite(400, 300, 'fishFood2');
+//            sprite = game.add.sprite(400, 300, 'seacreatures');
+//            sprite.animations.add('swim', Phaser.Animation.generateFrameNames('purpleFish', 0, 20, '', 4), 30, true);
+//            sprite.animations.play('swim');
+            sprite.scale.x = -1;
+            sprite.anchor.setTo(0.5, 0.5);
+
+            //	Enable Arcade Physics for the sprite
+            game.physics.enable(sprite, Phaser.Physics.ARCADE);
+
+            //	Tell it we don't want physics to manage the rotation
+            sprite.body.allowRotation = true;
+
+            // Collision Counter
+            scoreString = ' Score : ';
+            scoreText  = game.add.text(10, 10, scoreString + score);
+
+        }
+
+        
+        function update() {
+
+            sprite.rotation = game.physics.arcade.moveToPointer(sprite, 200, game.input.activePointer, 1500);
+            var spriteDir = sprite.deltaX;
+            if (spriteDir < 0) {
+                sprite.scale.y = -1;
+            } else {
+                sprite.scale.y = 1;
+            }
+
+            if (game.time.now > newFishTimer) {
+                sendFish();
+            }
+            game.physics.arcade.overlap(fish, sprite, collisionHandler, null, this);
+
+        }
+
+        function collisionHandler (fish, sprite) {
+            score += 1;
+            scoreText.text = scoreString + score;
+            sprite.kill();
+            console.log("Hit! "+ score);
+        }
+
+        function sendFish() {
+            newFish = fish.getFirstExists(false);
+
+            if (newFish == null) {
+                 return;
+            }
+
+            var direction = -1;
+            var startX = 0;
+            var endX = 800;
+            if(game.rnd.integer() % 2 == 0) {
+                direction = 1;
+                startX = 800;
+                endX = 0;
+            }
+            var startY = game.rnd.integer() % 600;
+            var speed = game.rnd.integerInRange(10,40);
+            var scale = game.rnd.realInRange(0.3, 1);
+
+            newFish.reset(startX, startY);
+            newFish.scale.x = direction * scale;
+            newFish.scale.y = scale;
+            game.physics.arcade.accelerateToXY(newFish, endX, startY, speed);
+            newFishTimer = game.time.now + 500;
+        }
+
+        function render() {
+
+//            game.debug.spriteInfo(sprite, 32, 32);
+
+        }
+
+    };
+
+    </script>
+    
+    <div id="phaser-example">
+    </div>
+
+
+    </body>
+</html>
