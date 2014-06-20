@@ -23,10 +23,12 @@
             game.load.image('undersea', 'assets/pics/undersea.jpg');
             game.load.image('coral', 'assets/pics/seabed.png');
 
-            game.load.image('fishFood2', 'assets/sprites/fishMedium1.png');
+            
             game.load.image('fishFood1', 'assets/sprites/fishMedium2.png');
+            game.load.image('fishFood2', 'assets/sprites/fishMedium1.png');
+            game.load.image('fishFood2', 'assets/sprites/fishMedium4.png');
             game.load.image('fishFood3', 'assets/sprites/fishLarge1.png');
-            game.load.image('fishFood4', 'assets/sprites/fishSmall2.png'); 
+            game.load.image('fishFood4', 'assets/sprites/fishSmall3.png'); 
         }
 
         var sprite;
@@ -49,11 +51,8 @@
             fish.physicsBodyType = Phaser.Physics.ARCADE;
             for(var i = 0; i < MAX_FISH; i++) {
                 var fishType = game.rnd.integerInRange(2,4);
-                
+                fish.create(360 * Math.random() * 200, 120 + Math.random() * 200,'fishFood'+fishType);
             }
-            fish.createMultiple(MAX_FISH,'fishFood2');
-            fish.setAll('anchor.x', 0.5);
-            fish.setAll('anchor.y', 1);
             fish.setAll('outOfBoundsKill',true);
             fish.setAll('checkWorldBounds',true);
 
