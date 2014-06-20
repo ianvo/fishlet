@@ -49,14 +49,16 @@
             fish.physicsBodyType = Phaser.Physics.ARCADE;
             for(var i = 0; i < MAX_FISH; i++) {
                 var fishType = game.rnd.integerInRange(2,4);
-                fish.create(, 'fishFood1');
+                
+            }
+            fish.createMultiple(MAX_FISH,'fishFood2');
             fish.setAll('anchor.x', 0.5);
             fish.setAll('anchor.y', 1);
             fish.setAll('outOfBoundsKill',true);
             fish.setAll('checkWorldBounds',true);
 
             // The player
-            sprite = game.add.sprite(400, 300, 'fishFood2');
+            sprite = game.add.sprite(400, 300, 'fishFood1');
 //            sprite = game.add.sprite(400, 300, 'seacreatures');
 //            sprite.animations.add('swim', Phaser.Animation.generateFrameNames('purpleFish', 0, 20, '', 4), 30, true);
 //            sprite.animations.play('swim');
