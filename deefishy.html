@@ -23,16 +23,17 @@
             game.load.image('undersea', 'assets/pics/undersea.jpg');
             game.load.image('coral', 'assets/pics/seabed.png');
 
-            
+            game.load.spritesheet('kaboom', 'assets/pics/explode.png', 128, 128);
             game.load.image('fishFood1', 'assets/sprites/fishMedium2.png');
             game.load.image('fishFood2', 'assets/sprites/fishMedium1.png');
             game.load.image('fishFood2', 'assets/sprites/fishMedium4.png');
-            game.load.image('fishFood3', 'assets/sprites/fishLarge1.png');
+            game.load.image('fishFood3', 'assets/sprites/fishLarge3.png');
             game.load.image('fishFood4', 'assets/sprites/fishSmall3.png'); 
         }
 
         var sprite;
         var fish;
+        var explosions;
         var MAX_FISH = 10;
 
         var score = 0;
@@ -49,12 +50,15 @@
             fish = game.add.group();
             fish.enableBody = true;
             fish.physicsBodyType = Phaser.Physics.ARCADE;
-            for(var i = 0; i < MAX_FISH; i++) {
-                var fishType = game.rnd.integerInRange(2,4);
-                fish.create(360 * Math.random() * 200, 120 + Math.random() * 200,'fishFood'+fishType);
-            }
+            fish.createMultiple(MAX_FISH);
+ //           for(var i = 0; i < MAX_FISH; i++) {
+ //               
+ //               fish.create(800,600,'fishFood'+fishType);
+ //           }
             fish.setAll('outOfBoundsKill',true);
             fish.setAll('checkWorldBounds',true);
+            fish.setAll('anchor.x', 0);
+            fish.setAll('anchor.y', 0.5);
 
             // The player
             sprite = game.add.sprite(400, 300, 'fishFood1');
@@ -74,11 +78,20 @@
             scoreString = ' Score : ';
             scoreText  = game.add.text(10, 10, scoreString + score);
 
+
+             //  Text
+            stateText = game.add.text(game.world.centerX,game.world.centerY,' ', { font: '84px Arial', fill: '#fff' });
+            stateText.anchor.setTo(0.5, 0.5);
+            stateText.visible = false;
+
+            //  An explosion pool
+            explosions = game.add.group();
+            explosions.createMultiple(30, 'kaboom');
+
         }
 
         
         function update() {
-
             sprite.rotation = game.physics.arcade.moveToPointer(sprite, 200, game.input.activePointer, 1500);
             var spriteDir = sprite.deltaX;
             if (spriteDir < 0) {
@@ -90,15 +103,28 @@
             if (game.time.now > newFishTimer) {
                 sendFish();
             }
-            game.physics.arcade.overlap(fish, sprite, collisionHandler, null, this);
+            game.physics.arcade.collide(sprite, fish, collisionHandler, null, this);
 
         }
 
-        function collisionHandler (fish, sprite) {
-            score += 1;
+        function collisionHandler (player, target) {
+            target.kill();
+            if (Math.abs(target.height) > Math.abs(player.height) || Math.abs(target.width) > Math.abs(player.width)) {
+                var explosion = explosions.getFirstExists(false);
+                explosion.reset(player.body.x, player.body.y);
+                explosion.play('kaboom', 30, false, true);
+                player.kill();
+                explosions.callAll('kill');
+
+                stateText.text=" GAME OVER \n Click to restart";
+                stateText.visible = true;
+
+                //the "click to restart" handler
+                game.input.onTap.addOnce(restart,this);
+            } else {
+                score += 1;
+            }
             scoreText.text = scoreString + score;
-            sprite.kill();
-            console.log("Hit! "+ score);
         }
 
         function sendFish() {
@@ -108,6 +134,9 @@
                  return;
             }
 
+            var fishType = game.rnd.integerInRange(2,4);
+
+            newFish.loadTexture('fishFood'+fishType);
             var direction = -1;
             var startX = 0;
             var endX = 800;
@@ -117,19 +146,33 @@
                 endX = 0;
             }
             var startY = game.rnd.integer() % 600;
-            var speed = game.rnd.integerInRange(10,40);
+            var speed = game.rnd.integerInRange(10,60);
             var scale = game.rnd.realInRange(0.3, 1);
 
             newFish.reset(startX, startY);
             newFish.scale.x = direction * scale;
             newFish.scale.y = scale;
             game.physics.arcade.accelerateToXY(newFish, endX, startY, speed);
-            newFishTimer = game.time.now + 500;
+            newFishTimer = game.time.now + 1000;
+        }
+
+        function restart () {
+
+            //revives the player
+            sprite.revive();
+            fish.callAll('kill');
+            //hides the text
+            stateText.visible = false;
+
+            score = 0;
+            scoreText.text = scoreString + score;
+
         }
 
         function render() {
 
 //            game.debug.spriteInfo(sprite, 32, 32);
+//            game.debug.renderPhysicsBody(sprite.body);
 
         }
 
