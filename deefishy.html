@@ -65,7 +65,8 @@
 //            sprite = game.add.sprite(400, 300, 'seacreatures');
 //            sprite.animations.add('swim', Phaser.Animation.generateFrameNames('purpleFish', 0, 20, '', 4), 30, true);
 //            sprite.animations.play('swim');
-            sprite.scale.x = -1;
+            sprite.scale.x = -1 * calculateFishScale();
+            sprite.scale.y *= calculateFishScale();
             sprite.anchor.setTo(0.5, 0.5);
 
             //	Enable Arcade Physics for the sprite
@@ -95,16 +96,21 @@
             sprite.rotation = game.physics.arcade.moveToPointer(sprite, 200, game.input.activePointer, 1500);
             var spriteDir = sprite.deltaX;
             if (spriteDir < 0) {
-                sprite.scale.y = -1;
+                sprite.scale.y = -1 * calculateFishScale();
             } else {
-                sprite.scale.y = 1;
+                sprite.scale.y = 1 * calculateFishScale();
             }
-
+            sprite.scale.x = (sprite.scale.x > 0 ? 1 : -1) * calculateFishScale();
             if (game.time.now > newFishTimer) {
                 sendFish();
             }
             game.physics.arcade.collide(sprite, fish, collisionHandler, null, this);
 
+        }
+
+        function calculateFishScale() {
+            
+            return Math.log(score + 2);
         }
 
         function collisionHandler (player, target) {
